@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TankiTO — Гараж</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #101820;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+    header {
+      padding: 20px;
+      background: #182632;
+      border-bottom: 2px solid #f0a52b;
+    }
+    h1 { margin: 0; color: #f0a52b; }
+    main { padding: 24px 14px; }
+    .garage {
+      max-width: 700px;
+      margin: auto;
+      padding: 24px;
+      background: #1b2b37;
+      border-radius: 12px;
+    }
+    .buttons {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 20px 0;
+    }
+    button {
+      padding: 12px 20px;
+      border: 1px solid #f0a52b;
+      border-radius: 7px;
+      background: #293d4b;
+      color: white;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button.active, button:hover {
+      background: #f0a52b;
+      color: #101820;
+    }
+    #viewer {
+      width: 100%;
+      height: 320px;
+      background: #101820;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      color: #b6c4ce;
+    }
+    #status { color: #f0a52b; margin-top: 16px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>TankiTO</h1>
+    <p>Гараж танков</p>
+  </header>
+
+  <main>
+    <section class="garage">
+      <h2 id="tankName">Thunder</h2>
+
+      <div class="buttons">
+        <button class="active" onclick="selectTank('Thunder', this)">Thunder</button>
+        <button onclick="selectTank('Hunter', this)">Hunter</button>
+      </div>
+
+      <div id="viewer">
+        <p>3D-модель будет отображаться здесь</p>
+      </div>
+
+      <div class="buttons">
+        <button onclick="selectUpgrade('M0', this)" class="active">M0</button>
+        <button onclick="selectUpgrade('M1', this)">M1</button>
+        <button onclick="selectUpgrade('M2', this)">M2</button>
+        <button onclick="selectUpgrade('M3', this)">M3</button>
+      </div>
+
+      <p id="status">Выбран Thunder M0</p>
+    </section>
+  </main>
+
+  <script>
+    let currentTank = 'Thunder';
+    let currentUpgrade = 'M0';
+
+    function updateGarage() {
+      document.getElementById('tankName').textContent = currentTank;
+      document.getElementById('status').textContent =
+        'Выбран ' + currentTank + ' ' + currentUpgrade;
+    }
+
+    function selectTank(tank, button) {
+      currentTank = tank;
+      document.querySelectorAll('.garage > .buttons:first-of-type button')
+        .forEach(b => b.classList.remove('active'));
+      button.classList.add('active');
+      updateGarage();
+    }
+
+    function selectUpgrade(upgrade, button) {
+      currentUpgrade = upgrade;
+      button.parentElement.querySelectorAll('button')
+        .forEach(b => b.classList.remove('active'));
+      button.classList.add('active');
+      updateGarage();
+    }
+  </script>
+</body>
+</html>
