@@ -1,119 +1,349 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TankiTO — Гараж</title>
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      background: #101820;
-      color: white;
-      font-family: Arial, sans-serif;
-      text-align: center;
-    }
-    header {
-      padding: 20px;
-      background: #182632;
-      border-bottom: 2px solid #f0a52b;
-    }
-    h1 { margin: 0; color: #f0a52b; }
-    main { padding: 24px 14px; }
-    .garage {
-      max-width: 700px;
-      margin: auto;
-      padding: 24px;
-      background: #1b2b37;
-      border-radius: 12px;
-    }
-    .buttons {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin: 20px 0;
-    }
-    button {
-      padding: 12px 20px;
-      border: 1px solid #f0a52b;
-      border-radius: 7px;
-      background: #293d4b;
-      color: white;
-      cursor: pointer;
-      font-size: 16px;
-    }
-    button.active, button:hover {
-      background: #f0a52b;
-      color: #101820;
-    }
-    #viewer {
-      width: 100%;
-      height: 320px;
-      background: #101820;
-      border-radius: 8px;
-      display: grid;
-      place-items: center;
-      color: #b6c4ce;
-    }
-    #status { color: #f0a52b; margin-top: 16px; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TankiTO — Гараж</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;background:#101318;color:#f1f4f8;
+  font-family:Arial,sans-serif
+}
+header{
+  padding:18px 22px;background:#191e26;
+  border-bottom:1px solid #303744;
+  display:flex;justify-content:space-between;align-items:center;
+  gap:12px;flex-wrap:wrap
+}
+.logo{font-size:25px;font-weight:900;letter-spacing:2px}
+.logo span{color:#ffb52e}
+.status{color:#9ca8b7;font-size:13px}
+main{max-width:1100px;margin:auto;padding:20px}
+h1{font-size:25px;margin:5px 0}
+.subtitle{color:#9ca8b7;margin:8px 0 20px}
+.tanks,.upgrades{
+  display:flex;gap:10px;flex-wrap:wrap;margin:14px 0
+}
+button{
+  background:#252c37;color:#e9edf4;border:1px solid #414b5b;
+  padding:12px 18px;border-radius:7px;cursor:pointer;
+  font-size:14px;font-weight:bold
+}
+button:hover{border-color:#ffb52e}
+button.active{
+  background:#65451a;border-color:#ffb52e;color:#fff
+}
+.layout{
+  display:grid;grid-template-columns:minmax(0,1fr) 270px;
+  gap:16px
+}
+.panel{
+  background:#191e26;border:1px solid #303744;
+  border-radius:12px;overflow:hidden
+}
+#viewer{
+  height:430px;position:relative;background:
+  radial-gradient(ellipse at center,#303947 0%,#171b22 68%,#101318 100%);
+  overflow:hidden
+}
+#viewer canvas{display:block;width:100%;height:100%}
+#viewerMessage{
+  position:absolute;left:12px;right:12px;bottom:12px;
+  padding:9px 12px;border-radius:6px;
+  background:#101318d9;color:#c8d0dc;font-size:12px;
+  pointer-events:none
+}
+.info{padding:18px}
+.info h2{margin:0 0 8px;font-size:23px}
+.info p{color:#aab4c3;line-height:1.5;font-size:14px}
+.stat{
+  display:flex;justify-content:space-between;gap:10px;
+  padding:12px 0;border-bottom:1px solid #303744;font-size:14px
+}
+.stat span{color:#aab4c3}
+.section-title{margin:24px 0 10px;font-size:17px}
+.note{
+  color:#aab4c3;font-size:13px;line-height:1.55;
+  background:#191e26;padding:14px;border-radius:8px
+}
+@media(max-width:760px){
+  .layout{grid-template-columns:1fr}
+  #viewer{height:340px}
+}
+</style>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
 </head>
+
 <body>
-  <header>
-    <h1>TankiTO</h1>
-    <p>Гараж танков</p>
-  </header>
+<header>
+  <div class="logo">TANKI<span>TO</span></div>
+  <div class="status">Браузерная танковая игра · Гараж</div>
+</header>
 
-  <main>
-    <section class="garage">
-      <h2 id="tankName">Thunder</h2>
+<main>
+  <h1>Гараж</h1>
+  <p class="subtitle">Выбери танк и осмотри его модель.</p>
 
-      <div class="buttons">
-        <button class="active" onclick="selectTank('Thunder', this)">Thunder</button>
-        <button onclick="selectTank('Hunter', this)">Hunter</button>
-      </div>
+  <div class="tanks">
+    <button id="thunderBtn" class="active">⚡ Thunder</button>
+    <button id="hunterBtn">🎯 Hunter</button>
+  </div>
 
+  <div class="layout">
+    <section class="panel">
       <div id="viewer">
-        <p>3D-модель будет отображаться здесь</p>
+        <div id="viewerMessage">Загрузка 3D-сцены...</div>
       </div>
+      <div class="info">
+        <h2 id="tankName">Thunder</h2>
+        <p id="tankDescription">Осмотр модели танка.</p>
 
-      <div class="buttons">
-        <button onclick="selectUpgrade('M0', this)" class="active">M0</button>
-        <button onclick="selectUpgrade('M1', this)">M1</button>
-        <button onclick="selectUpgrade('M2', this)">M2</button>
-        <button onclick="selectUpgrade('M3', this)">M3</button>
+        <div class="section-title">Модификация</div>
+        <div class="upgrades">
+          <button data-level="M0" class="active">M0</button>
+          <button data-level="M1">M1</button>
+          <button data-level="M2">M2</button>
+          <button data-level="M3">M3</button>
+        </div>
+        <p id="upgradeInfo">Выбрана базовая модификация M0.</p>
       </div>
-
-      <p id="status">Выбран Thunder M0</p>
     </section>
-  </main>
 
-  <script>
-    let currentTank = 'Thunder';
-    let currentUpgrade = 'M0';
+    <aside class="panel">
+      <div class="info">
+        <h2>Характеристики</h2>
+        <div class="stat"><span>Танк</span><b id="statTank">Thunder</b></div>
+        <div class="stat"><span>Модификация</span><b id="statLevel">M0</b></div>
+        <div class="stat"><span>3D-модель</span><b id="statModel">Загрузка</b></div>
 
-    function updateGarage() {
-      document.getElementById('tankName').textContent = currentTank;
-      document.getElementById('status').textContent =
-        'Выбран ' + currentTank + ' ' + currentUpgrade;
+        <div class="section-title">Управление</div>
+        <p>🖱️ Зажми левую кнопку мыши и двигай мышь, чтобы вращать модель.</p>
+        <p>🔍 Используй колёсико для приближения и отдаления.</p>
+
+        <div class="section-title">Файлы моделей</div>
+        <p id="fileInfo">Thunder/old/m0/turret.3ds</p>
+      </div>
+    </aside>
+  </div>
+
+  <div class="section-title">О проекте</div>
+  <div class="note">
+    TankiTO — браузерный проект с гаражом и 3D-моделями.
+    Для полноценного танка нужны корпус hull.3ds и башня turret.3ds.
+    Модификации M1–M3 пока являются интерфейсом выбора, а не отдельными моделями.
+  </div>
+</main>
+
+<script type="module">
+import * as THREE from "three";
+import { TDSLoader } from "three/addons/loaders/TDSLoader.js";
+
+const viewer = document.getElementById("viewer");
+const message = document.getElementById("viewerMessage");
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x171b22);
+
+const camera = new THREE.PerspectiveCamera(
+  45, viewer.clientWidth / viewer.clientHeight, 0.1, 10000
+);
+camera.position.set(0, 3, 8);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(viewer.clientWidth, viewer.clientHeight);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+viewer.prepend(renderer.domElement);
+
+scene.add(new THREE.HemisphereLight(0xffffff, 0x454b58, 2));
+
+const light = new THREE.DirectionalLight(0xffffff, 3);
+light.position.set(5, 8, 6);
+scene.add(light);
+
+const floor = new THREE.GridHelper(20, 20, 0x596273, 0x343b47);
+floor.position.y = -1.5;
+scene.add(floor);
+
+const tankGroup = new THREE.Group();
+scene.add(tankGroup);
+
+let currentTank = "Thunder";
+let currentLevel = "M0";
+let loadToken = 0;
+let dragging = false;
+let previousX = 0;
+let previousY = 0;
+
+const configs = {
+  Thunder: {
+    path: "Thunder/old/m0/turret.3ds",
+    description: "Башня с пушкой Thunder. Для полного танка требуется hull.3ds.",
+    files: "Thunder/old/m0/turret.3ds"
+  },
+  Hunter: {
+    path: "Hunter/old/m0/hull.3ds",
+    description: "Корпус Hunter с гусеницами. Для полного танка требуется turret.3ds.",
+    files: "Hunter/old/m0/hull.3ds"
+  }
+};
+
+function setMessage(text) {
+  message.textContent = text;
+}
+
+function clearModel() {
+  while (tankGroup.children.length) {
+    const object = tankGroup.children[0];
+    tankGroup.remove(object);
+    object.traverse?.(child => {
+      if (child.geometry) child.geometry.dispose();
+      if (child.material) {
+        const materials = Array.isArray(child.material)
+          ? child.material : [child.material];
+        materials.forEach(material => material.dispose());
+      }
+    });
+  }
+}
+
+function frameModel(object) {
+  const box = new THREE.Box3().setFromObject(object);
+  if (box.isEmpty()) return;
+
+  const size = box.getSize(new THREE.Vector3());
+  const center = box.getCenter(new THREE.Vector3());
+  object.position.sub(center);
+
+  const maxDimension = Math.max(size.x, size.y, size.z);
+  if (maxDimension > 0) {
+    object.scale.setScalar(4 / maxDimension);
+  }
+
+  const scaledBox = new THREE.Box3().setFromObject(object);
+  const scaledCenter = scaledBox.getCenter(new THREE.Vector3());
+  object.position.sub(scaledCenter);
+
+  camera.position.set(0, 2.4, 7);
+  camera.lookAt(0, 0, 0);
+}
+
+function loadTank() {
+  const token = ++loadToken;
+  clearModel();
+
+  const config = configs[currentTank];
+  document.getElementById("tankName").textContent = currentTank;
+  document.getElementById("statTank").textContent = currentTank;
+  document.getElementById("statLevel").textContent = currentLevel;
+  document.getElementById("tankDescription").textContent = config.description;
+  document.getElementById("fileInfo").textContent = config.files;
+  document.getElementById("statModel").textContent = "Загрузка";
+  setMessage("Загружаем " + config.path + " ...");
+
+  const loader = new TDSLoader();
+  loader.setResourcePath(config.path.substring(0, config.path.lastIndexOf("/") + 1));
+
+  loader.load(
+    config.path,
+    object => {
+      if (token !== loadToken) return;
+      tankGroup.add(object);
+      frameModel(object);
+      document.getElementById("statModel").textContent = "Загружена";
+      setMessage("Модель загружена. Вращай её мышкой.");
+    },
+    undefined,
+    error => {
+      if (token !== loadToken) return;
+      console.error("Ошибка загрузки модели:", error);
+      document.getElementById("statModel").textContent = "Ошибка";
+      setMessage("Не удалось загрузить модель. Проверь путь и наличие файла в GitHub.");
     }
+  );
+}
 
-    function selectTank(tank, button) {
-      currentTank = tank;
-      document.querySelectorAll('.garage > .buttons:first-of-type button')
-        .forEach(b => b.classList.remove('active'));
-      button.classList.add('active');
-      updateGarage();
-    }
+document.getElementById("thunderBtn").addEventListener("click", () => {
+  currentTank = "Thunder";
+  document.getElementById("thunderBtn").classList.add("active");
+  document.getElementById("hunterBtn").classList.remove("active");
+  loadTank();
+});
 
-    function selectUpgrade(upgrade, button) {
-      currentUpgrade = upgrade;
-      button.parentElement.querySelectorAll('button')
-        .forEach(b => b.classList.remove('active'));
-      button.classList.add('active');
-      updateGarage();
-    }
-  </script>
+document.getElementById("hunterBtn").addEventListener("click", () => {
+  currentTank = "Hunter";
+  document.getElementById("hunterBtn").classList.add("active");
+  document.getElementById("thunderBtn").classList.remove("active");
+  loadTank();
+});
+
+document.querySelectorAll("[data-level]").forEach(button => {
+  button.addEventListener("click", () => {
+    currentLevel = button.dataset.level;
+    document.querySelectorAll("[data-level]").forEach(b =>
+      b.classList.toggle("active", b === button)
+    );
+    document.getElementById("statLevel").textContent = currentLevel;
+    document.getElementById("upgradeInfo").textContent =
+      "Выбрана модификация " + currentLevel +
+      ". Отдельная модель для неё пока не подключена.";
+  });
+});
+
+renderer.domElement.addEventListener("pointerdown", event => {
+  dragging = true;
+  previousX = event.clientX;
+  previousY = event.clientY;
+  renderer.domElement.setPointerCapture(event.pointerId);
+});
+
+renderer.domElement.addEventListener("pointermove", event => {
+  if (!dragging) return;
+  const dx = event.clientX - previousX;
+  const dy = event.clientY - previousY;
+  tankGroup.rotation.y += dx * 0.01;
+  tankGroup.rotation.x += dy * 0.005;
+  previousX = event.clientX;
+  previousY = event.clientY;
+});
+
+renderer.domElement.addEventListener("pointerup", () => dragging = false);
+renderer.domElement.addEventListener("pointercancel", () => dragging = false);
+
+renderer.domElement.addEventListener("wheel", event => {
+  event.preventDefault();
+  camera.position.z = THREE.MathUtils.clamp(
+    camera.position.z + event.deltaY * 0.008, 2, 20
+  );
+}, { passive: false });
+
+function resize() {
+  const width = viewer.clientWidth;
+  const height = viewer.clientHeight;
+  camera.aspect = width / height;
+  camera.updateProjectionMatrix();
+  renderer.setSize(width, height);
+}
+window.addEventListener("resize", resize);
+
+function animate() {
+  requestAnimationFrame(animate);
+  renderer.render(scene, camera);
+}
+animate();
+
+loadTank();
+</script>
 </body>
 </html>
